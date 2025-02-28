@@ -1,0 +1,45 @@
+Services:
+  nginx:
+    image: docker.io/nginx:latest
+    container_name: nginx
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./projects/www:/var/www/html
+    depends_on:
+      - php
+    restart: always
+  
+  php:
+    image: docker.io/libraty/php:8.2-fpm
+    container_name: php
+    volumes:
+      - ./projects/www:/var/www/html
+    restart: always
+
+  mysql:
+    image: docker.io/libraty/mariadb:latest
+    container_name: mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_DATABASE: php_db
+      MYSQL_USER: php_user
+      MYSQL_PASSWORD: php_pass
+    env_file:
+      - ./mysql/.env
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+    restart: always
+
+  phpmyadmin:
+    image: docker.io/phpmyadmin/phpmyadmin:latest
+    container_name: phpmyadmin
+    ports:
+      - "8081:80"
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    depends_on:
+      - mysql
+    restart: always
