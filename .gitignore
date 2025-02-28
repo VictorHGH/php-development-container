@@ -1,1 +1,2 @@
-./mysql/.env
+.env
+.DS_Store
