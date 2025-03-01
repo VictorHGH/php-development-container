@@ -13,8 +13,8 @@ Estos paquetes pueden instalarse con su gestor de paquetes favorito.
 ```bash
 $ podman compose -f container-compose.yml up -d
 ```
-
 ### Estructura de los directorios y archivos:
+```
 .
 ├── container-compose.yml
 ├── mysql
@@ -25,6 +25,7 @@ $ podman compose -f container-compose.yml up -d
 ├── projects
 │   └── www
 └── README.md
+```
 
 ## Como crear un proyecto nuevo
 
