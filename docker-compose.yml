@@ -18,6 +18,8 @@ services:
       - ./projects/www:/var/www/html
     command: >
       bash -c "docker-php-ext-install mysqli && php-fpm"    
+    depends_on:
+      - mysql
     restart: always
 
   mysql:
