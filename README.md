@@ -1,22 +1,33 @@
 # Entorno de desarrollo para proyectos PHP
 
-Esta configuración utiliza [podman](https://podman.io/) y [docker-compose](https://docs.docker.com/compose/) para la creación de un entorno de desarrollo para proyectos PHP. el conteneror utiliza php, nginx, mysql y phpmyadmin para todos los proyectos.
+Esta configuración utiliza [docker](https://www.docker.com) para la creación de un entorno de desarrollo para proyectos PHP. el conteneror utiliza php, nginx, mysql y phpmyadmin para todos los proyectos.
 
 ## Requisitos:
-- podman
-- docker-compose
+- Docker
 
 Estos paquetes pueden instalarse con su gestor de paquetes favorito.
 
 ## Instalación
 
+antes de iniciar el docker compose, se debe crear un archivo .env dentro de la carpeta mysql con el siguiente contenido:
+
+```
+MYSQL_ROOT_PASSWORD=""
+MYSQL_DATABASE=""
+MYSQL_USER=""
+MYSQL_PASSWORD=""
+```
+y poner las credenciales de preferencia.
+
+Luego de esto, se debe iniciar el docker compose con el siguiente comando:
+
 ```bash
-$ podman compose -f container-compose.yml up -d
+$ docker compose up
 ```
 ### Estructura de los directorios y archivos:
-```
+``` zsh
 .
-├── container-compose.yml
+├── docker-compose.yml
 ├── mysql
 │   └── data
 ├── nginx
@@ -31,40 +42,45 @@ $ podman compose -f container-compose.yml up -d
 
 Cada proyecto se crea en un directorio dentro de la siguiente ruta:
 
-```
+``` zsh
 $ cd projects/www
 ```
 
 ## Configurarar nueva proyecto en nginx
 
-Dentro del archivo de configuración que se encuentra en la ruta:
+Dirigirse al directorio: nginx/conf.d
 
-```
+``` zsh
 $ cd nginx/conf.d
 ```
 
-Editar y agregar el siguiente contenido:
+Debido a que cada proyecto es independiente, se debe modificar el archivo default.conf para que apunte a un virtual host y a la carpeta donde se encuentra el index.php de cada proyecto. De esta manera se pueden apuntar a varios proyectos al mismo tiempo.
+
+El siguiente código es un ejemplo de configuración para un proyecto:
+
+Se deben modificar los valores de los campos ________ y ________ para que apunten al virtual host y la carpeta del proyecto respectivamente.
 
 ```
 server {
     listen 80;
-    server_name localhost;
+    server_name ________;
 
-    root /var/www/html;
-    index index.php index.html index.htm;
+    root /var/www/html/________;
+    index index.php;
 
     location / {
-        try_files $uri $uri/ /index.php?$args;
+        try_files $uri $uri/ /index.php?$query_string;
     }
 
     location ~ \.php$ {
-        try_files $uri =404;
-        fastcgi_split_path_info ^(.+\.php)(/.+)$;
+        include fastcgi_params;
         fastcgi_pass php:9000;
         fastcgi_index index.php;
-        include fastcgi_params;
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-        fastcgi_param PATH_INFO $fastcgi_path_info;
+    }
+
+    location ~ /\.ht {
+        deny all;
     }
 }
 ```
