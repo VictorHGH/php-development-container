@@ -28,7 +28,7 @@ services:
     env_file:
       - ./mysql/.env
     volumes:
-      - ./mysql/data:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
     restart: always
 
   phpmyadmin:
@@ -42,3 +42,6 @@ services:
     depends_on:
       - mysql
     restart: always
+    
+volumes:
+  mysql_data:
