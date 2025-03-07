@@ -1,4 +1,7 @@
 .env
 .DS_Store
-youtube_course/
 mysql_data.tar
+
+# Cursos
+youtube_course/
+titulos_se/
