@@ -1,5 +1,5 @@
-Exportar:
-docker run --rm -v php_mysql_data:/volume -v $(pwd):/backup busybox tar cvf /backup/mysql_data.tar /volume
+# Exportar el contenido del volumen sin incluir la carpeta raíz
+docker run --rm -v mysql_data:/volume -v $(pwd):/backup busybox tar cvf /backup/mysql_data.tar -C /volume .
 
 Importar:
 docker run --rm -v mysql_data:/volume -v $(pwd):/backup busybox tar xvf /backup/mysql_data.tar -C /volume

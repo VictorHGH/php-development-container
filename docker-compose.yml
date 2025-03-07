@@ -8,7 +8,7 @@ services:
       - ./nginx/conf.d:/etc/nginx/conf.d
       - ./projects/www:/var/www/html
     networks:
-      - php-develop-network
+      - develop-network
     depends_on:
       - php
     restart: always
@@ -18,10 +18,15 @@ services:
     container_name: php
     volumes:
       - ./projects/www:/var/www/html
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=php_user
+      - DB_PASSWORD=php_pass
+      - DB_NAME=php_db
     command: >
-      bash -c "docker-php-ext-install mysqli && php-fpm"    
+      bash -c "docker-php-ext-install mysqli && php-fpm"
     networks:
-      - php-develop-network
+      - develop-network
     depends_on:
       - mysql
     restart: always
@@ -30,6 +35,7 @@ services:
     image: mysql:9.2
     container_name: mysql
     environment:
+      MYSQL_ROOT_HOST: "mysql"
       MYSQL_ROOT_PASSWORD: root_pass
       MYSQL_DATABASE: php_db
       MYSQL_USER: php_user
@@ -37,7 +43,7 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
-      - php-develop-network
+      - develop-network
     restart: always
 
   phpmyadmin:
@@ -49,14 +55,15 @@ services:
       PMA_HOST: mysql
       MYSQL_ROOT_PASSWORD: root_db_pass
     networks:
-      - php-develop-network
+      - develop-network
     depends_on:
       - mysql
     restart: always
     
 volumes:
   mysql_data:
+    external: true
 
 networks:
-  php-develop-network:
+  develop-network:
     driver: bridge
