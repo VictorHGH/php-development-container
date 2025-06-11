@@ -14,7 +14,7 @@ services:
     restart: always
   
   php:
-    image: php:8.3-fpm
+    build: ./docker/php
     container_name: php
     volumes:
       - ./projects/www:/var/www/html
@@ -23,8 +23,6 @@ services:
       - DB_USER=php_user
       - DB_PASSWORD=php_pass
       - DB_NAME=php_db
-    command: >
-      bash -c "docker-php-ext-install mysqli && php-fpm"
     networks:
       - develop-network
     depends_on:
