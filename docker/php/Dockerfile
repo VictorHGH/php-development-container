@@ -21,7 +21,7 @@ RUN docker-php-ext-install \
 FROM php-base AS production
 
 # 2.1 copia /usr/bin/composer desde la imagen oficial
-COPY --from=composer:2.8 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2.9 /usr/bin/composer /usr/bin/composer
 
 
 WORKDIR /var/www/html
