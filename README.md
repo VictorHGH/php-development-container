@@ -1,71 +1,88 @@
-# Entorno de desarrollo para proyectos PHP
+# Entorno de desarrollo PHP con Docker
 
-Esta configuración utiliza [docker](https://www.docker.com) para la creación de un entorno de desarrollo para proyectos PHP. el conteneror utiliza php, nginx, mysql y phpmyadmin para todos los proyectos.
+Este repositorio levanta un entorno local para varios proyectos PHP usando Docker:
 
-## Requisitos:
-- Docker
+- Nginx (reverse proxy y virtual hosts)
+- PHP-FPM 8.4 con extensiones comunes
+- MySQL
+- phpMyAdmin
 
-Estos paquetes pueden instalarse con su gestor de paquetes favorito.
+## Requisitos
 
-## Instalación
+- Docker Engine + Docker Compose plugin
 
-antes de iniciar el docker compose, se debe crear un archivo .env dentro de la carpeta mysql con el siguiente contenido:
+## Instalacion
 
-```
-MYSQL_ROOT_PASSWORD=""
-MYSQL_DATABASE=""
-MYSQL_USER=""
-MYSQL_PASSWORD=""
-```
-y poner las credenciales de preferencia.
-
-Luego de esto, se debe iniciar el docker compose con el siguiente comando:
+1. Copia el archivo de ejemplo y ajusta credenciales:
 
 ```bash
-$ docker compose up
+cp .env.example .env
 ```
-### Estructura de los directorios y archivos:
-``` zsh
+
+2. Inicia los servicios:
+
+```bash
+docker compose up -d
+```
+
+3. Accesos:
+
+- Aplicaciones PHP: `http://localhost:8082`
+- phpMyAdmin: `http://localhost:8081`
+
+## Variables de entorno
+
+El archivo `.env` (en la raiz del proyecto) controla credenciales y opciones de imagen.
+
+Variables disponibles:
+
+- `MYSQL_IMAGE` (por defecto `mysql:8.4`)
+- `MYSQL_ROOT_HOST` (por defecto `%`)
+- `MYSQL_ROOT_PASSWORD`
+- `MYSQL_DATABASE`
+- `MYSQL_USER`
+- `MYSQL_PASSWORD`
+- `DB_HOST` (por defecto `mysql`)
+
+## Estructura
+
+```text
 .
 ├── docker-compose.yml
-├── mysql
-│   └── data
-├── nginx
-│   └── conf.d
-│       └── default.conf
-├── projects
-│   └── www
-└── README.md
+├── docker/
+│   └── php/
+│       └── Dockerfile
+├── nginx/
+│   └── conf.d/
+│       ├── default.conf
+│       └── sites/
+├── projects/
+│   └── www/
+│       └── index.php
+└── .env.example
 ```
 
-## Como crear un proyecto nuevo
+## Crear un proyecto nuevo
 
-Cada proyecto se crea en un directorio dentro de la siguiente ruta:
+Cada proyecto debe vivir dentro de `projects/www`:
 
-``` zsh
-$ cd projects/www
+```bash
+mkdir -p projects/www/mi_proyecto
 ```
 
-## Configurarar nueva proyecto en nginx
+Luego agrega su `index.php` (o estructura del framework).
 
-Dirigirse al directorio: nginx/conf.d
+## Configurar un virtual host en Nginx
 
-``` zsh
-$ cd nginx/conf.d
-```
+1. Crea un archivo dentro de `nginx/conf.d/sites/`, por ejemplo `mi_proyecto.test.conf`.
+2. Usa esta plantilla:
 
-Debido a que cada proyecto es independiente, se debe modificar el archivo default.conf para que apunte a un virtual host y a la carpeta donde se encuentra el index.php de cada proyecto. De esta manera se pueden apuntar a varios proyectos al mismo tiempo.
-
-El siguiente código es un ejemplo de configuración para un proyecto:
-
-Se deben modificar los valores de los campos ________ y ________ para que apunten al virtual host y la carpeta del proyecto respectivamente.
-
-```
+```nginx
 server {
     listen 80;
-    server_name ________;
+    server_name mi_proyecto.test;
 
-    root /var/www/html/________;
+    root /var/www/html/mi_proyecto/public;
     index index.php;
 
     location / {
@@ -84,3 +101,21 @@ server {
     }
 }
 ```
+
+3. Agrega el host en tu sistema:
+
+```text
+127.0.0.1 mi_proyecto.test
+```
+
+4. Recarga Nginx:
+
+```bash
+docker compose restart nginx
+```
+
+## Comandos utiles
+
+- Ver logs: `docker compose logs -f`
+- Parar servicios: `docker compose down`
+- Reconstruir PHP: `docker compose build php`
