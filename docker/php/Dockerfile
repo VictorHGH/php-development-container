@@ -5,9 +5,12 @@ FROM php:8.4-fpm-alpine AS php-base
 
 # 1.1 paquetes de sistema requeridos por intl, gd, etc.
 RUN apk add --no-cache icu-data-full icu-dev \
-    libpng-dev jpeg-dev oniguruma-dev libzip-dev
+    libpng-dev libjpeg-turbo-dev freetype-dev oniguruma-dev libzip-dev
 
-# 1.2 compilar extensiones
+# 1.2 configurar gd con soporte jpeg y freetype
+RUN docker-php-ext-configure gd --with-jpeg --with-freetype
+
+# 1.3 compilar extensiones
 RUN docker-php-ext-install \
         intl         \
         mysqli       \
