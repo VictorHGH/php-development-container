@@ -40,13 +40,80 @@ docker compose up -d
 - Apps PHP: `http://127.0.0.1:8082`
 - phpMyAdmin: `http://127.0.0.1:8081`
 
-## Crear un nuevo proyecto
+## Agregar un proyecto completo
+
+Guia recomendada para dejar un proyecto listo (codigo + dominio local + Nginx + DB opcional).
+
+1. Crear carpeta del proyecto:
 
 ```bash
 mkdir -p projects/www/mi_proyecto
 ```
 
-Si usas framework (Laravel/Symfony/etc.), coloca su raiz dentro de `projects/www/mi_proyecto` y configura un vhost en `nginx/conf.d/sites/`.
+2. Copiar el codigo dentro de `projects/www/mi_proyecto`.
+
+3. Crear un vhost en `nginx/conf.d/sites/mi_proyecto.test.conf`:
+
+```nginx
+server {
+    listen 80;
+    server_name mi_proyecto.test;
+
+    # PHP puro:
+    root /var/www/html/mi_proyecto;
+    # Framework (Laravel/Symfony): usa /public
+    # root /var/www/html/mi_proyecto/public;
+
+    index index.php;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass php:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+}
+```
+
+4. Registrar el dominio local en `/etc/hosts`:
+
+```text
+127.0.0.1 mi_proyecto.test
+```
+
+5. Recargar Nginx y validar:
+
+```bash
+docker compose restart nginx
+```
+
+Abrir: `http://mi_proyecto.test:8082`
+
+6. (Opcional) Instalar dependencias PHP con Composer dentro del contenedor:
+
+```bash
+docker compose exec php composer install -d /var/www/html/mi_proyecto
+```
+
+7. (Opcional) Crear una base de datos dedicada para el proyecto:
+
+```bash
+docker compose exec mysql sh -lc 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" -e "CREATE DATABASE mi_proyecto_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"'
+```
+
+8. (Opcional) Importar un dump SQL:
+
+```bash
+docker compose exec -T mysql sh -lc 'mysql -u root -p"$MYSQL_ROOT_PASSWORD" mi_proyecto_db' < backup.sql
+```
 
 ## Variables principales (`.env`)
 
